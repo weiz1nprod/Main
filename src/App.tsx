@@ -41,9 +41,13 @@ export default function App() {
   const handleLogin = async () => {
     try {
       setLoginError(null);
-      await googleSignIn();
+      const result = await googleSignIn();
+      if (result) {
+        setUser(result.user);
+        setToken(result.accessToken);
+      }
     } catch (e: any) {
-      if (e.code !== 'auth/popup-closed-by-user') {
+      if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') {
         setLoginError('Falha ao autenticar. Tente novamente.');
         alert('Falha ao autenticar com o Google.');
       }

@@ -34,6 +34,7 @@ export const initAuth = (
 };
 
 export const googleSignIn = async (): Promise<{ user: User; accessToken: string } | null> => {
+  if (isSigningIn) return null;
   try {
     isSigningIn = true;
     const result = await signInWithPopup(auth, provider);
@@ -45,7 +46,9 @@ export const googleSignIn = async (): Promise<{ user: User; accessToken: string 
     cachedAccessToken = credential.accessToken;
     return { user: result.user, accessToken: cachedAccessToken };
   } catch (error: any) {
-    console.error('Sign in error:', error);
+    if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
+      console.error('Sign in error:', error);
+    }
     throw error;
   } finally {
     isSigningIn = false;

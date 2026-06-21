@@ -1,11 +1,22 @@
-import { ReactNode } from 'react';
-import { Plane, BookOpen, BrainCircuit, Network, Calendar, Users, LogIn } from 'lucide-react';
+import { ReactNode, useState } from 'react';
+import { Plane, BookOpen, BrainCircuit, Network, Calendar, Users, LogIn, Loader2 } from 'lucide-react';
 
 interface LandingProps {
   onLogin: () => Promise<any>;
 }
 
 export default function Landing({ onLogin }: LandingProps) {
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    try {
+      setLoading(true);
+      await onLogin();
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
       {/* Header */}
@@ -15,11 +26,12 @@ export default function Landing({ onLogin }: LandingProps) {
           <span className="text-xl font-bold tracking-tight">AeroMechanic</span>
         </div>
         <button
-          onClick={onLogin}
-          className="flex items-center space-x-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-xl font-medium hover:bg-blue-100 transition-colors"
+          onClick={handleLogin}
+          disabled={loading}
+          className="flex items-center space-x-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-xl font-medium hover:bg-blue-100 transition-colors disabled:opacity-50"
         >
-          <LogIn className="w-4 h-4" />
-          <span>Entrar / Cadastrar</span>
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
+          <span>{loading ? 'Entrando...' : 'Entrar / Cadastrar'}</span>
         </button>
       </header>
 
@@ -39,10 +51,12 @@ export default function Landing({ onLogin }: LandingProps) {
           Faça upload das suas apostilas e manuais. Transformamos seus PDFs em flashcards, quizzes e mapas mentais automaticamente para aprimorar seus estudos diários.
         </p>
         <button
-          onClick={onLogin}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-full font-bold text-lg transition-transform hover:scale-105 shadow-xl shadow-blue-600/20"
+          onClick={handleLogin}
+          disabled={loading}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-full font-bold text-lg transition-transform hover:scale-105 shadow-xl shadow-blue-600/20 disabled:opacity-50 inline-flex items-center space-x-2"
         >
-          Comece a Estudar Gratuitamente
+          {loading && <Loader2 className="w-5 h-5 animate-spin" />}
+          <span>{loading ? 'Aguarde...' : 'Comece a Estudar Gratuitamente'}</span>
         </button>
       </section>
 
