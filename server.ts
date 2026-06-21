@@ -22,8 +22,8 @@ async function startServer() {
     next();
   });
 
-  // Extracted Data schema
-  const responseSchema: Schema = {
+  // Extracted Data schemas for parallel processing
+  const flashquizSchema: Schema = {
     type: Type.OBJECT,
     properties: {
       flashcards: {
@@ -49,7 +49,14 @@ async function startServer() {
           },
           required: ["question", "options", "correctAnswer", "explanation"]
         }
-      },
+      }
+    },
+    required: ["flashcards", "quiz"]
+  };
+
+  const mindmapSchema: Schema = {
+    type: Type.OBJECT,
+    properties: {
       mindmap: {
         type: Type.OBJECT,
         properties: {
@@ -57,10 +64,7 @@ async function startServer() {
             type: Type.ARRAY,
             items: {
               type: Type.OBJECT,
-              properties: {
-                id: { type: Type.STRING },
-                label: { type: Type.STRING }
-              },
+              properties: { id: { type: Type.STRING }, label: { type: Type.STRING } },
               required: ["id", "label"]
             }
           },
@@ -68,18 +72,20 @@ async function startServer() {
             type: Type.ARRAY,
             items: {
               type: Type.OBJECT,
-              properties: {
-                id: { type: Type.STRING },
-                source: { type: Type.STRING },
-                target: { type: Type.STRING },
-                label: { type: Type.STRING }
-              },
+              properties: { id: { type: Type.STRING }, source: { type: Type.STRING }, target: { type: Type.STRING }, label: { type: Type.STRING } },
               required: ["id", "source", "target"]
             }
           }
         },
         required: ["nodes", "edges"]
-      },
+      }
+    },
+    required: ["mindmap"]
+  };
+
+  const topicsSchema: Schema = {
+    type: Type.OBJECT,
+    properties: {
       topics: {
         type: Type.ARRAY,
         items: {
@@ -92,7 +98,7 @@ async function startServer() {
         }
       }
     },
-    required: ["flashcards", "quiz", "mindmap", "topics"]
+    required: ["topics"]
   };
 
   app.post("/api/generate-study-material", async (req, res) => {
@@ -117,36 +123,89 @@ async function startServer() {
       const buffer = Buffer.from(arrayBuffer);
       const base64Data = buffer.toString('base64');
       
-      console.log("PDF downloaded. Sending to Gemini...");
+      console.log("PDF downloaded. Ignited 3 parallel Gemini extraction tasks to optimize time...");
 
-      const generation = await ai.models.generateContent({
+      const pdfPart = {
+        inlineData: {
+          mimeType: "application/pdf",
+          data: base64Data
+        }
+      };
+
+      const flashQuizPromise = ai.models.generateContent({
         model: "gemini-2.5-flash",
         contents: [
           {
             role: "user",
             parts: [
-              {
-                inlineData: {
-                  mimeType: "application/pdf",
-                  data: base64Data
-                }
-              },
-              { text: "Você é um assistente acadêmico de mecânica de manutenção de aeronaves. Analise este PDF e gere:\n1. 10 Flashcards (Perguntas e Respostas curtas e diretas).\n2. 5 Perguntas de Múltipla Escolha (Quiz) com 4 opções cada e explicação detalhada da correta.\n3. Um mapa mental básico conectando os conceitos chave do material (nodes e edges curtos e diretos, máximo de 10 nodes).\n4. Resumo estruturado extraindo o conteúdo principal, dividido em tópicos (title e content detalhado). Condense as informações essenciais para não exceder limites de texto." }
+              pdfPart,
+              { text: "Você é um assistente acadêmico de mecânica de manutenção de aeronaves. Analise este PDF e gere:\n1. 10 Flashcards (Perguntas e Respostas curtas e diretas).\n2. 5 Perguntas de Múltipla Escolha (Quiz) com 4 opções cada e explicação detalhada da correta." }
             ]
           }
         ],
         config: {
           responseMimeType: "application/json",
-          responseSchema: responseSchema,
+          responseSchema: flashquizSchema,
         }
       });
 
-      const responseText = generation.text;
-      if (!responseText) {
-        throw new Error("Gemini returned empty response.");
+      const mindmapPromise = ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: [
+          {
+            role: "user",
+            parts: [
+              pdfPart,
+              { text: "Você é um assistente acadêmico de mecânica de manutenção de aeronaves. Analise este PDF e gere um mapa mental básico conectando os conceitos chave do material (nodes e edges curtos e diretos, máximo de 10 nodes)." }
+            ]
+          }
+        ],
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: mindmapSchema,
+        }
+      });
+
+      const topicsPromise = ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: [
+          {
+            role: "user",
+            parts: [
+              pdfPart,
+              { text: "Você é um assistente acadêmico de mecânica de manutenção de aeronaves. Analise este PDF e gere um resumo estruturado extraindo o conteúdo principal, dividido em tópicos (title e content detalhado). Condense as informações essenciais." }
+            ]
+          }
+        ],
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: topicsSchema,
+        }
+      });
+
+      const [flashQuizRes, mindmapRes, topicsRes] = await Promise.all([
+        flashQuizPromise,
+        mindmapPromise,
+        topicsPromise
+      ]);
+
+      if (!flashQuizRes.text || !mindmapRes.text || !topicsRes.text) {
+        throw new Error("One or more Gemini generation tasks returned empty response.");
       }
 
-      const structuredData = JSON.parse(responseText);
+      console.log("All tasks completed! Merging final payload.");
+
+      const flashQuizData = JSON.parse(flashQuizRes.text);
+      const mindmapData = JSON.parse(mindmapRes.text);
+      const topicsData = JSON.parse(topicsRes.text);
+
+      const structuredData = {
+        flashcards: flashQuizData.flashcards || [],
+        quiz: flashQuizData.quiz || [],
+        mindmap: mindmapData.mindmap || { nodes: [], edges: [] },
+        topics: topicsData.topics || []
+      };
+
       res.json(structuredData);
 
     } catch (error: any) {

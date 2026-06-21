@@ -50,18 +50,20 @@ export default function MaterialView() {
 
       <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
         {/* Menu de Tópicos (sidebar no desktop, scroll horizontal no mobile) */}
-        <div className="w-full md:w-80 bg-slate-50/80 border-b md:border-b-0 md:border-r border-slate-200 shrink-0 overflow-x-auto md:overflow-x-hidden md:overflow-y-auto flex flex-row md:flex-col p-3 gap-2 md:gap-1" style={{ scrollbarWidth: 'none' }}>
+        <div className="w-full md:w-80 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 shrink-0 overflow-x-auto md:overflow-y-auto flex flex-row md:flex-col p-3 gap-2 hide-scrollbar">
           {material.topics.map((topic, index) => (
             <button
               key={index}
               onClick={() => setActiveTopic(index)}
-              className={`text-left px-4 py-2.5 md:py-3 rounded-full md:rounded-xl text-[13px] md:text-sm transition-all shrink-0 max-w-[260px] md:max-w-none border ${
+              className={`flex-none text-left px-4 py-2 rounded-full md:rounded-lg text-sm font-medium transition-colors ${
                 activeTopic === index 
-                ? 'bg-blue-600 text-white font-semibold border-blue-600 shadow-sm' 
-                : 'bg-white md:bg-transparent text-slate-600 border-slate-200 md:border-transparent hover:bg-slate-100'
+                ? 'bg-blue-100 text-blue-700' 
+                : 'text-slate-600 hover:bg-slate-200'
               }`}
             >
-              <span className="block truncate md:whitespace-normal md:line-clamp-2 md:leading-snug">{topic.title}</span>
+              <div className="truncate max-w-[200px] md:max-w-none md:whitespace-normal">
+                {topic.title}
+              </div>
             </button>
           ))}
         </div>
