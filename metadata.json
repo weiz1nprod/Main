@@ -1,0 +1,8 @@
+{
+  "name": "AeroMechanic Study",
+  "description": "App de estudo para mecânico de manutenção de aeronaves com flashcards, calendário, Drive, revisão espaçada e fórum.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
