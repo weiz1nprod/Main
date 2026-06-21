@@ -95,7 +95,7 @@ export default function Dashboard({ user, token }: DashboardProps) {
       
     } catch (err) {
       console.error(err);
-      alert('Falha ao processar material.');
+      alert(`Falha ao processar material: ${(err as Error).message}`);
     } finally {
       setProcessing(false);
     }

@@ -1,5 +1,7 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 
+export const maxDuration = 60; // Allow up to 60 seconds on Vercel
+
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const responseSchema: Schema = {
