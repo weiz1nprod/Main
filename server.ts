@@ -98,7 +98,7 @@ async function startServer() {
       console.log("PDF downloaded. Sending to Gemini...");
 
       const generation = await ai.models.generateContent({
-        model: "gemini-2.5-pro",
+        model: "gemini-2.5-flash",
         contents: [
           {
             role: "user",
