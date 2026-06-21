@@ -44,10 +44,7 @@ export default function Dashboard({ user, token }: DashboardProps) {
     setProcessing(true);
     
     try {
-      const isVercel = window.location.hostname.includes('vercel.app') || window.location.hostname.includes('vercel');
-      const apiUrl = isVercel 
-        ? 'https://ais-pre-3erjyhr2ei2qv3pcrfotbe-384551269521.us-east1.run.app/api/generate-study-material' 
-        : '/api/generate-study-material';
+      const apiUrl = '/api/generate-study-material';
 
       const res = await fetch(apiUrl, {
         method: 'POST',

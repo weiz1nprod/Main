@@ -12,7 +12,7 @@ provider.addScope('https://www.googleapis.com/auth/drive.readonly');
 provider.addScope('https://www.googleapis.com/auth/calendar.events');
 
 let isSigningIn = false;
-let cachedAccessToken: string | null = null;
+let cachedAccessToken: string | null = sessionStorage.getItem('aero_access_token');
 
 export const initAuth = (
   onAuthSuccess?: (user: User, token: string) => void,
@@ -23,10 +23,12 @@ export const initAuth = (
       if (cachedAccessToken) {
         if (onAuthSuccess) onAuthSuccess(user, cachedAccessToken);
       } else if (!isSigningIn) {
+        sessionStorage.removeItem('aero_access_token');
         cachedAccessToken = null;
         if (onAuthFailure) onAuthFailure();
       }
     } else {
+      sessionStorage.removeItem('aero_access_token');
       cachedAccessToken = null;
       if (onAuthFailure) onAuthFailure();
     }
@@ -44,6 +46,7 @@ export const googleSignIn = async (): Promise<{ user: User; accessToken: string 
     }
 
     cachedAccessToken = credential.accessToken;
+    sessionStorage.setItem('aero_access_token', cachedAccessToken);
     return { user: result.user, accessToken: cachedAccessToken };
   } catch (error: any) {
     if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
@@ -61,5 +64,6 @@ export const getAccessToken = async (): Promise<string | null> => {
 
 export const logout = async () => {
   await auth.signOut();
+  sessionStorage.removeItem('aero_access_token');
   cachedAccessToken = null;
 };
