@@ -39,6 +39,7 @@ export interface Material {
   createdAt: number;
   userId: string;
   mindmap?: MindMapData;
+  topics?: { title: string; content: string }[];
 }
 
 export interface ForumPost {

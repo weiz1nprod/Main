@@ -65,7 +65,8 @@ export default function Dashboard({ user, token }: DashboardProps) {
         driveFileId: file.id,
         createdAt: Date.now(),
         userId: user.uid,
-        mindmap: parsed.mindmap
+        mindmap: parsed.mindmap,
+        topics: parsed.topics
       });
 
       const flashcards = parsed.flashcards.map((fc: any) => ({
@@ -139,7 +140,7 @@ export default function Dashboard({ user, token }: DashboardProps) {
           className="flex flex-col items-center justify-center p-8 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl transition-colors shadow-sm disabled:opacity-75"
         >
           {processing ? (
-             <><Loader2 className="w-10 h-10 mb-4 animate-spin" /><span className="font-semibold text-lg">Analisando PDF com Gemini...</span><span className="text-sm text-blue-200 mt-2">Extraindo e gerando questões e mapa mental</span></>
+             <><Loader2 className="w-10 h-10 mb-4 animate-spin text-white" /><span className="font-semibold text-lg">Processando material...</span><span className="text-sm text-blue-200 mt-2">Isso pode levar até um minuto</span></>
           ) : (
             <><FileUp className="w-10 h-10 mb-4" /><span className="font-semibold text-lg">Importar PDF do Drive</span><span className="text-sm text-blue-200 mt-2">Gera flashcards, quizzes e mapa mental</span></>
           )}

@@ -4,7 +4,7 @@ import { getMaterials } from '../lib/db';
 import { db } from '../lib/firebase';
 import { Material, Quiz } from '../types';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { FileText, PlayCircle, Network } from 'lucide-react';
+import { FileText, PlayCircle, Network, BookOpen, BrainCircuit } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function StudyList({ user }: { user: User }) {
@@ -55,11 +55,29 @@ export default function StudyList({ user }: { user: User }) {
               </div>
               
               <div className="flex flex-col space-y-2 mt-4">
+                <Link to={`/material/${mat.id}`} className="flex items-center justify-between text-sm font-medium text-slate-700 hover:text-blue-600 p-2 hover:bg-slate-50 rounded-lg transition-colors border border-transparent hover:border-slate-100">
+                  <div className="flex items-center space-x-2">
+                    <BookOpen size={18} className="text-blue-500" />
+                    <span>Ler Conteúdo</span>
+                  </div>
+                </Link>
+
                 {mat.mindmap && (
-                  <Link to={`/mindmap/${mat.id}`} className="flex items-center space-x-2 text-sm font-medium text-slate-700 hover:text-blue-600 p-2 hover:bg-slate-50 rounded-lg transition-colors">
-                    <Network size={18} />
-                    <span>Ver Mapa Mental</span>
+                  <Link to={`/mindmap/${mat.id}`} className="flex items-center justify-between text-sm font-medium text-slate-700 hover:text-blue-600 p-2 hover:bg-slate-50 rounded-lg transition-colors border border-transparent hover:border-slate-100">
+                    <div className="flex items-center space-x-2">
+                        <Network size={18} className="text-emerald-500" />
+                        <span>Ver Mapa Mental</span>
+                    </div>
                   </Link>
+                )}
+
+                {quizzes[mat.id] && quizzes[mat.id].length > 0 && (
+                  <button className="flex items-center justify-between text-sm font-medium text-slate-700 hover:text-blue-600 p-2 hover:bg-slate-50 rounded-lg transition-colors w-full border border-transparent hover:border-slate-100">
+                    <div className="flex items-center space-x-2">
+                        <BrainCircuit size={18} className="text-purple-500" />
+                        <span>Fazer Quiz ({quizzes[mat.id][0].questions.length})</span>
+                    </div>
+                  </button>
                 )}
               </div>
             </div>

@@ -60,9 +60,20 @@ const responseSchema: Schema = {
         }
       },
       required: ["nodes", "edges"]
+    },
+    topics: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          title: { type: Type.STRING },
+          content: { type: Type.STRING }
+        },
+        required: ["title", "content"]
+      }
     }
   },
-  required: ["flashcards", "quiz", "mindmap"]
+  required: ["flashcards", "quiz", "mindmap", "topics"]
 };
 
 export default async function handler(req: any, res: any) {
@@ -106,7 +117,7 @@ export default async function handler(req: any, res: any) {
                 data: base64Data
               }
             },
-            { text: "Você é um assistente acadêmico de mecânica de manutenção de aeronaves. Analise este PDF e gere:\n1. 10 Flashcards (Perguntas e Respostas curtas e diretas).\n2. 5 Perguntas de Múltipla Escolha (Quiz) com 4 opções cada e explicação detalhada da correta.\n3. Um mapa mental básico conectando os conceitos chave do material (nodes e edges curtos e diretos, máximo de 10 nodes)." }
+            { text: "Você é um assistente acadêmico de mecânica de manutenção de aeronaves. Analise este PDF e gere:\n1. 10 Flashcards (Perguntas e Respostas curtas e diretas).\n2. 5 Perguntas de Múltipla Escolha (Quiz) com 4 opções cada e explicação detalhada da correta.\n3. Um mapa mental básico conectando os conceitos chave do material (nodes e edges curtos e diretos, máximo de 10 nodes).\n4. Resumo estruturado extraindo o conteúdo principal, dividido em tópicos (title e content detalhado). Condense as informações essenciais para não exceder limites de texto." }
           ]
         }
       ],

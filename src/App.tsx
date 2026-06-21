@@ -13,6 +13,7 @@ import Landing from './pages/Landing';
 import StudyList from './pages/StudyList';
 import Review from './pages/Review';
 import MindMapViewer from './pages/MindMapViewer';
+import MaterialView from './pages/MaterialView';
 import Forum from './pages/Forum';
 import Progress from './pages/Progress';
 
@@ -74,6 +75,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Dashboard user={user} token={token} />} />
             <Route path="/study" element={<StudyList user={user} />} />
+            <Route path="/material/:id" element={<MaterialView />} />
             <Route path="/review" element={<Review user={user} />} />
             <Route path="/mindmap/:materialId" element={<MindMapViewer />} />
             <Route path="/progress" element={<Progress user={user} />} />
