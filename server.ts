@@ -121,15 +121,17 @@ async function startServer() {
 
       const arrayBuffer = await driveRes.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      const base64Data = buffer.toString('base64');
       
-      console.log("PDF downloaded. Ignited 3 parallel Gemini extraction tasks to optimize time...");
+      console.log("PDF downloaded. Extracting text to optimize Gemini processing speed...");
+      // Dynamically import pdf-parse to avoid esbuild issues
+      const pdfParse = (await import('pdf-parse')).default;
+      const pdfData = await pdfParse(buffer);
+      const pdfText = pdfData.text;
+      
+      console.log(`Extracted ~${pdfText.length} characters of text. Igniting 3 parallel Gemini extraction tasks...`);
 
-      const pdfPart = {
-        inlineData: {
-          mimeType: "application/pdf",
-          data: base64Data
-        }
+      const textPart = {
+        text: `CONTEÚDO DO MATERIAL:\n\n${pdfText}\n\n=== FIM DO CONTEÚDO ===\n\n`
       };
 
       const flashQuizPromise = ai.models.generateContent({
@@ -138,8 +140,8 @@ async function startServer() {
           {
             role: "user",
             parts: [
-              pdfPart,
-              { text: "Você é um assistente acadêmico de mecânica de manutenção de aeronaves. Analise este PDF e gere:\n1. 10 Flashcards (Perguntas e Respostas curtas e diretas).\n2. 5 Perguntas de Múltipla Escolha (Quiz) com 4 opções cada e explicação detalhada da correta." }
+              textPart,
+              { text: "Você é um assistente acadêmico de mecânica de manutenção de aeronaves. Analise o texto acima e gere:\n1. 10 Flashcards (Perguntas e Respostas curtas e diretas).\n2. 5 Perguntas de Múltipla Escolha (Quiz) com 4 opções cada e explicação detalhada da correta." }
             ]
           }
         ],
@@ -155,8 +157,8 @@ async function startServer() {
           {
             role: "user",
             parts: [
-              pdfPart,
-              { text: "Você é um assistente acadêmico de mecânica de manutenção de aeronaves. Analise este PDF e gere um mapa mental básico conectando os conceitos chave do material (nodes e edges curtos e diretos, máximo de 10 nodes)." }
+              textPart,
+              { text: "Você é um assistente acadêmico de mecânica de manutenção de aeronaves. Analise o texto acima e gere um mapa mental básico conectando os conceitos chave do material (nodes e edges curtos e diretos, máximo de 10 nodes)." }
             ]
           }
         ],
@@ -172,8 +174,8 @@ async function startServer() {
           {
             role: "user",
             parts: [
-              pdfPart,
-              { text: "Você é um assistente acadêmico de mecânica de manutenção de aeronaves. Analise este PDF e gere um resumo estruturado extraindo o conteúdo principal, dividido em tópicos (title e content detalhado). Condense as informações essenciais." }
+              textPart,
+              { text: "Você é um assistente acadêmico de mecânica de manutenção de aeronaves. Analise o texto acima e gere um resumo estruturado extraindo o conteúdo principal, dividido em tópicos (title e content detalhado). Condense as informações essenciais." }
             ]
           }
         ],

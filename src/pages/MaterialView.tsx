@@ -50,18 +50,18 @@ export default function MaterialView() {
 
       <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
         {/* Menu de Tópicos (sidebar no desktop, scroll horizontal no mobile) */}
-        <div className="w-full md:w-80 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 shrink-0 overflow-x-auto md:overflow-y-auto flex flex-row md:flex-col p-3 gap-2 hide-scrollbar">
+        <div className="w-full md:w-80 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 shrink-0 overflow-x-auto md:overflow-y-auto flex flex-row md:flex-col p-3 gap-2" style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
           {material.topics.map((topic, index) => (
             <button
               key={index}
               onClick={() => setActiveTopic(index)}
-              className={`flex-none text-left px-4 py-2 rounded-full md:rounded-lg text-sm font-medium transition-colors ${
+              className={`flex-none text-left px-4 py-2 rounded-full md:rounded-lg text-sm font-medium transition-colors border ${
                 activeTopic === index 
-                ? 'bg-blue-100 text-blue-700' 
-                : 'text-slate-600 hover:bg-slate-200'
+                ? 'bg-blue-600 text-white border-blue-600 shadow-sm' 
+                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
               }`}
             >
-              <div className="truncate max-w-[200px] md:max-w-none md:whitespace-normal">
+              <div className="truncate max-w-[240px] md:max-w-none md:whitespace-normal">
                 {topic.title}
               </div>
             </button>
