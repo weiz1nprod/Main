@@ -22,8 +22,8 @@ async function startServer() {
     next();
   });
 
-  // Extracted Data schemas for parallel processing
-  const flashquizSchema: Schema = {
+  // Unified Data Schema for single-pass processing
+  const unifiedSchema: Schema = {
     type: Type.OBJECT,
     properties: {
       flashcards: {
@@ -49,14 +49,7 @@ async function startServer() {
           },
           required: ["question", "options", "correctAnswer", "explanation"]
         }
-      }
-    },
-    required: ["flashcards", "quiz"]
-  };
-
-  const mindmapSchema: Schema = {
-    type: Type.OBJECT,
-    properties: {
+      },
       mindmap: {
         type: Type.OBJECT,
         properties: {
@@ -78,14 +71,7 @@ async function startServer() {
           }
         },
         required: ["nodes", "edges"]
-      }
-    },
-    required: ["mindmap"]
-  };
-
-  const topicsSchema: Schema = {
-    type: Type.OBJECT,
-    properties: {
+      },
       topics: {
         type: Type.ARRAY,
         items: {
@@ -98,7 +84,7 @@ async function startServer() {
         }
       }
     },
-    required: ["topics"]
+    required: ["flashcards", "quiz", "mindmap", "topics"]
   };
 
   app.post("/api/generate-study-material", async (req, res) => {
@@ -123,7 +109,7 @@ async function startServer() {
       const buffer = Buffer.from(arrayBuffer);
       const base64Data = buffer.toString('base64');
       
-      console.log("PDF downloaded. Ignited 3 parallel Gemini extraction tasks to optimize time...");
+      console.log("PDF downloaded. Igniting single Gemini extraction task to optimize time...");
 
       const pdfPart = {
         inlineData: {
@@ -132,78 +118,38 @@ async function startServer() {
         }
       };
 
-      const flashQuizPromise = ai.models.generateContent({
+      const generationPromise = ai.models.generateContent({
         model: "gemini-2.5-flash",
         contents: [
           {
             role: "user",
             parts: [
               pdfPart,
-              { text: "Você é um assistente acadêmico de mecânica de manutenção de aeronaves. Analise este PDF e gere:\n1. 10 Flashcards (Perguntas e Respostas curtas e diretas).\n2. 5 Perguntas de Múltipla Escolha (Quiz) com 4 opções cada e explicação detalhada da correta." }
+              { text: "Você é um assistente acadêmico de mecânica de manutenção de aeronaves. Analise este PDF e gere em UMA única resposta:\n1. 10 Flashcards (Perguntas e Respostas curtas e diretas).\n2. 5 Perguntas de Múltipla Escolha (Quiz) com 4 opções cada e explicação detalhada da correta.\n3. Um mapa mental básico conectando os conceitos chave do material (nodes e edges curtos e diretos, máximo de 10 nodes).\n4. Resumo estruturado extraindo o conteúdo principal, dividido em tópicos (title e content detalhado). Condense as informações essenciais." }
             ]
           }
         ],
         config: {
           responseMimeType: "application/json",
-          responseSchema: flashquizSchema,
+          responseSchema: unifiedSchema,
         }
       });
 
-      const mindmapPromise = ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: [
-          {
-            role: "user",
-            parts: [
-              pdfPart,
-              { text: "Você é um assistente acadêmico de mecânica de manutenção de aeronaves. Analise este PDF e gere um mapa mental básico conectando os conceitos chave do material (nodes e edges curtos e diretos, máximo de 10 nodes)." }
-            ]
-          }
-        ],
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: mindmapSchema,
-        }
-      });
+      const resGen = await generationPromise;
 
-      const topicsPromise = ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: [
-          {
-            role: "user",
-            parts: [
-              pdfPart,
-              { text: "Você é um assistente acadêmico de mecânica de manutenção de aeronaves. Analise este PDF e gere um resumo estruturado extraindo o conteúdo principal, dividido em tópicos (title e content detalhado). Condense as informações essenciais." }
-            ]
-          }
-        ],
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: topicsSchema,
-        }
-      });
-
-      const [flashQuizRes, mindmapRes, topicsRes] = await Promise.all([
-        flashQuizPromise,
-        mindmapPromise,
-        topicsPromise
-      ]);
-
-      if (!flashQuizRes.text || !mindmapRes.text || !topicsRes.text) {
-        throw new Error("One or more Gemini generation tasks returned empty response.");
+      if (!resGen.text) {
+        throw new Error("Gemini generation task returned empty response.");
       }
 
-      console.log("All tasks completed! Merging final payload.");
+      console.log("Extraction task completed! Sending final payload.");
 
-      const flashQuizData = JSON.parse(flashQuizRes.text);
-      const mindmapData = JSON.parse(mindmapRes.text);
-      const topicsData = JSON.parse(topicsRes.text);
+      const extractedData = JSON.parse(resGen.text);
 
       const structuredData = {
-        flashcards: flashQuizData.flashcards || [],
-        quiz: flashQuizData.quiz || [],
-        mindmap: mindmapData.mindmap || { nodes: [], edges: [] },
-        topics: topicsData.topics || []
+        flashcards: extractedData.flashcards || [],
+        quiz: extractedData.quiz || [],
+        mindmap: extractedData.mindmap || { nodes: [], edges: [] },
+        topics: extractedData.topics || []
       };
 
       res.json(structuredData);
