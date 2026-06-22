@@ -26,17 +26,6 @@ async function startServer() {
   const unifiedSchema: Schema = {
     type: Type.OBJECT,
     properties: {
-      flashcards: {
-        type: Type.ARRAY,
-        items: {
-          type: Type.OBJECT,
-          properties: {
-            question: { type: Type.STRING },
-            answer: { type: Type.STRING }
-          },
-          required: ["question", "answer"]
-        }
-      },
       quiz: {
         type: Type.ARRAY,
         items: {
@@ -50,28 +39,6 @@ async function startServer() {
           required: ["question", "options", "correctAnswer", "explanation"]
         }
       },
-      mindmap: {
-        type: Type.OBJECT,
-        properties: {
-          nodes: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: { id: { type: Type.STRING }, label: { type: Type.STRING } },
-              required: ["id", "label"]
-            }
-          },
-          edges: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: { id: { type: Type.STRING }, source: { type: Type.STRING }, target: { type: Type.STRING }, label: { type: Type.STRING } },
-              required: ["id", "source", "target"]
-            }
-          }
-        },
-        required: ["nodes", "edges"]
-      },
       topics: {
         type: Type.ARRAY,
         items: {
@@ -84,7 +51,7 @@ async function startServer() {
         }
       }
     },
-    required: ["flashcards", "quiz", "mindmap", "topics"]
+    required: ["quiz", "topics"]
   };
 
   app.post("/api/generate-study-material", async (req, res) => {
@@ -125,7 +92,7 @@ async function startServer() {
             role: "user",
             parts: [
               pdfPart,
-              { text: "Você é um assistente acadêmico de mecânica de manutenção de aeronaves. Analise este PDF e gere em UMA única resposta:\n1. 10 Flashcards (Perguntas e Respostas curtas e diretas).\n2. 5 Perguntas de Múltipla Escolha (Quiz) com 4 opções cada e explicação detalhada da correta.\n3. Um mapa mental básico conectando os conceitos chave do material (nodes e edges curtos e diretos, máximo de 10 nodes).\n4. Resumo estruturado extraindo o conteúdo principal, dividido em tópicos (title e content detalhado). Condense as informações essenciais." }
+              { text: "Você é um assistente acadêmico de mecânica de manutenção de aeronaves. Analise este PDF e gere em UMA única resposta:\n1. Um resumo estruturado extraindo o conteúdo principal, dividido em tópicos (title e content detalhado). Condense as informações essenciais.\n2. 5 Perguntas de Múltipla Escolha (Quiz) com 4 opções cada e explicação detalhada da correta baseadas nos tópicos extraídos." }
             ]
           }
         ],
@@ -146,9 +113,7 @@ async function startServer() {
       const extractedData = JSON.parse(resGen.text);
 
       const structuredData = {
-        flashcards: extractedData.flashcards || [],
         quiz: extractedData.quiz || [],
-        mindmap: extractedData.mindmap || { nodes: [], edges: [] },
         topics: extractedData.topics || []
       };
 

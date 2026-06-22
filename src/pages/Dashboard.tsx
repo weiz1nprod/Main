@@ -65,24 +65,9 @@ export default function Dashboard({ user, token }: DashboardProps) {
         driveFileId: file.id,
         createdAt: Date.now(),
         userId: user.uid,
-        mindmap: parsed.mindmap,
         topics: parsed.topics
       });
 
-      const flashcards = parsed.flashcards.map((fc: any) => ({
-        ...fc,
-        userId: user.uid,
-        materialId,
-        nextReviewDate: Date.now(),
-        interval: 0,
-        easeFactor: 2.5,
-        repetitions: 0
-      }));
-      
-      if (flashcards.length > 0) {
-        await addFlashcards(flashcards);
-      }
-      
       if (parsed.quiz && parsed.quiz.length > 0) {
         await addQuiz({
           userId: user.uid,
@@ -142,7 +127,7 @@ export default function Dashboard({ user, token }: DashboardProps) {
           {processing ? (
              <><Loader2 className="w-10 h-10 mb-4 animate-spin text-white" /><span className="font-semibold text-lg">Processando material...</span><span className="text-sm text-blue-200 mt-2">Isso pode levar até um minuto</span></>
           ) : (
-            <><FileUp className="w-10 h-10 mb-4" /><span className="font-semibold text-lg">Importar PDF do Drive</span><span className="text-sm text-blue-200 mt-2">Gera flashcards, quizzes e mapa mental</span></>
+            <><FileUp className="w-10 h-10 mb-4" /><span className="font-semibold text-lg">Importar PDF do Drive</span><span className="text-sm text-blue-200 mt-2">Gera resumos por tópicos e questionário</span></>
           )}
         </button>
 

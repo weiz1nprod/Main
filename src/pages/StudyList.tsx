@@ -62,22 +62,13 @@ export default function StudyList({ user }: { user: User }) {
                   </div>
                 </Link>
 
-                {mat.mindmap && (
-                  <Link to={`/mindmap/${mat.id}`} className="flex items-center justify-between text-sm font-medium text-slate-700 hover:text-blue-600 p-2 hover:bg-slate-50 rounded-lg transition-colors border border-transparent hover:border-slate-100">
-                    <div className="flex items-center space-x-2">
-                        <Network size={18} className="text-emerald-500" />
-                        <span>Ver Mapa Mental</span>
-                    </div>
-                  </Link>
-                )}
-
                 {quizzes[mat.id] && quizzes[mat.id].length > 0 && (
-                  <button className="flex items-center justify-between text-sm font-medium text-slate-700 hover:text-blue-600 p-2 hover:bg-slate-50 rounded-lg transition-colors w-full border border-transparent hover:border-slate-100">
+                  <Link to={`/quiz/${mat.id}`} className="flex items-center justify-between text-sm font-medium text-slate-700 hover:text-blue-600 p-2 hover:bg-slate-50 rounded-lg transition-colors w-full border border-transparent hover:border-slate-100">
                     <div className="flex items-center space-x-2">
                         <BrainCircuit size={18} className="text-purple-500" />
-                        <span>Fazer Quiz ({quizzes[mat.id][0].questions.length})</span>
+                        <span>Fazer Questionário ({quizzes[mat.id][0].questions.length})</span>
                     </div>
-                  </button>
+                  </Link>
                 )}
               </div>
             </div>
